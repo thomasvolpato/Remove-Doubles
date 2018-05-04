@@ -4,9 +4,11 @@ import glob
 import argparse
 import exifread
 
-
+# get all files in the path
 def GetFileList(path):
     fileList = []
+	
+	#scan all folders/files
     for filename in glob.iglob(path, recursive=True):
         img = Image.open(filename)
         width, height = img.size
@@ -67,9 +69,12 @@ if (args.path):
 fileList = GetFileList(path)
 listLen = len(fileList)
 
+#debug log
 streamFile = open("duplicatedFiles.txt", "w")
 countDuplicated = 0
 duplicadedSize = 0
+
+
 for file in fileList:
     added = False
     tmpString = ""
@@ -86,39 +91,50 @@ for file in fileList:
                 if(folderPath1 == folderPath2):
                     sameFolder = True
 
+				#TODO: create a single window for both images
+				#TODO: create a UI Button instead of a console
                 if not(not sameFolder and SAME_FOLDER):
                     cFile[4] = True
                     added = True
                     countDuplicated += 1
                     duplicadedSize += cFile[3]
 
+					
                     if ITERACTIVE:
+						#show the two duplicated images
+						#to guarantee that both images are equal
                         img = Image.open(file[0])
                         img.show()
                         img2 = Image.open(cFile[0])
                         img2.show()
+						
+						#print the path of both images
+						#used to help user to determine which file will be deleted
                         print("[1] " + file[0][:file[0].rfind('\\')] +
                               "\t" + file[0][file[0].rfind('\\'):])
                         print("[2] " + cFile[0][:cFile[0].rfind('\\')] +
                               "\t" + cFile[0][cFile[0].rfind('\\'):])
 
+						#input
                         keyPressed = input(
                             "Action to do: [1 or 2] Remove; [any] Nothing.\n")
 
-                        if(keyPressed == '1'):
-                            print('Deleting first file\n', file[0])
+                        if(keyPressed == '1'):                        
                             os.remove(file[0])
+							print('Deleted first file\n', file[0])
                         elif(keyPressed == '2'):
-                            print('Deleting second file\n', cFile[0])
                             os.remove(cFile[0])
+							print('Deleted second file\n', cFile[0])
                         else:
                             print("Nothing done!\n")
 
+		#if some file was deleted, add the file's name to output log
         if added:
             streamFile.write(file[0] + "\n")
             streamFile.write(tmpString)
+			
 streamFile.close()
 
-
+#report of deleted files
 print(listLen, " files checked! With ", countDuplicated,
       " files duplicaded (", duplicadedSize/(1024*1024), "MB)\n")
